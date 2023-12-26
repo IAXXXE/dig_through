@@ -4,13 +4,23 @@
 #include "raylib.h"
 #include "raymath.h"
 
-#define G 500
-#define PLAYER_JUMP_SPD 150.0f
-#define PLAYER_HOR_SPD 200.0f
-#define PLAYER_SIZE 24
-
 #define GRID_SIZE 40
 #define GRID_COUNT 36
+
+typedef enum GameState
+{
+    Start,
+    Running,
+    Over,
+}GameState;
+
+typedef enum GravityArea
+{
+    North,
+    East,
+    West,
+    South
+}GravityArea;
 
 typedef enum TileType
 {
@@ -24,36 +34,17 @@ typedef enum TileType
     Lava
 }TileType;
 
-typedef enum GravityArea
-{
-    North,
-    East,
-    West,
-    South
-}GravityArea;
+// typedef struct TileMap
+// {
+//     /* data */
+// };
+
 
 typedef struct GridPosition
 {
     int x;
     int y;
 }GridPosition;
-
-typedef struct Player {
-    Vector2 position;
-    Vector2 size;
-    Texture2D texture;
-    GravityArea gravityArea;
-    GridPosition grid;
-    float speed;
-    bool canJump;
-    bool canDig;
-} Player;
-
-typedef struct EnvItem {
-    Rectangle rect;
-    int blocking;
-    Color color;
-} EnvItem;
 
 typedef struct Tile
 {
@@ -62,7 +53,14 @@ typedef struct Tile
     GridPosition grid;
     TileType type;
     bool isHollowed;
+    bool hasRuby;
 }Tile;
+
+typedef struct EnvItem {
+    Rectangle rect;
+    int blocking;
+    Color color;
+} EnvItem;
 
 Rectangle ToRectangle(Vector2 position, int size);
 

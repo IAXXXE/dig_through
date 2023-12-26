@@ -3,6 +3,10 @@
 
 void InitTexture(void)
 {
+    // Player
+
+
+    // Tile
     for (int i = 0; i < 10; i++)
     {
         char path[256];
@@ -21,6 +25,15 @@ void InitTexture(void)
         sprintf(path, "image/tiles/%s_%d.png", TileTypeToString(Lava), i);
         textureLib.lava.tile[i] = PathToTexture(path, GRID_SIZE);
     }
+
+    textureLib.ice.tile[10]   = PathToTexture("image/rubys/ruby_b_1.png", GRID_SIZE);
+    textureLib.grass.tile[10] = PathToTexture("image/rubys/ruby_g_1.png", GRID_SIZE);
+    // textureLib.clok.tile[10]  = PathToTexture("image/rubys/ruby_b_1.png", GRID_SIZE);
+    // textureLib.stone.tile[10] = PathToTexture("image/rubys/ruby_b_1.png", GRID_SIZE);
+    textureLib.sand.tile[10]  = PathToTexture("image/rubys/ruby_y_1.png", GRID_SIZE);
+    textureLib.igneous.tile[10] = PathToTexture("image/rubys/ruby_r_1.png", GRID_SIZE);
+    // textureLib.lava.tile[10]  = PathToTexture("image/rubys/ruby_b_1.png", GRID_SIZE);
+
 }
 
 const char *TileTypeToString(TileType type)

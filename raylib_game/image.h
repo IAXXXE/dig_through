@@ -10,7 +10,7 @@ typedef struct PalyerTexture
 
 typedef struct TileTexture
 {
-    Texture2D tile[10];
+    Texture2D tile[11];
 }TileTexture;
 
 typedef struct TextureLib
@@ -27,7 +27,7 @@ typedef struct TextureLib
 
 }TextureLib;
 
-static TextureLib textureLib = {0};
+extern TextureLib textureLib;
 
 void InitTexture(void);
 
