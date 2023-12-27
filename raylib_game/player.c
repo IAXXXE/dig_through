@@ -1,4 +1,4 @@
-#include "player.h"
+#include "include/player.h"
 
 GridPosition WorldToCell(Vector2 worldPosition)
 {
@@ -51,8 +51,9 @@ void DigGrid(int gridX,int gridY)
     {
         if(targetTile.hasRuby) 
         {
-            stamina += 3;
+            stamina += 4;
             score += 100;
+            rubyAmount --;
         }
         // canDig = false;
         stamina -= 1;
@@ -83,11 +84,11 @@ void BuildGrid(int gridX,int gridY)
 
 void CheckGravityArea(void)
 {
-    if (player.grid.y < GRID_COUNT / 3)
+    if (player.grid.y < gridCount / 3)
         player.gravityArea = North;
-    else if (player.grid.y < GRID_COUNT * 2 / 3 && player.grid.x < GRID_COUNT / 2)
+    else if (player.grid.y < gridCount * 2 / 3 && player.grid.x < gridCount / 2)
         player.gravityArea = West;
-    else if (player.grid.y < GRID_COUNT * 2 / 3 && player.grid.x >= GRID_COUNT / 2)
+    else if (player.grid.y < gridCount * 2 / 3 && player.grid.x >= gridCount / 2)
         player.gravityArea = East;
     else
         player.gravityArea = South;
@@ -97,16 +98,17 @@ bool CheckCollision(void)
 {
     GridPosition checkGridPos = WorldToCell(player.position);
     player.grid = checkGridPos;
-    checkGridPos.x -= 1;
+    checkGridPos.x -= 1; 
     checkGridPos.y -= 1;
 
     for (int i = 0; i <= 2; i++)
     {
         for (int j = 0; j <= 2; j++)
         {
-            if ((checkGridPos.x + i) < 0 || (checkGridPos.x + i) >= GRID_COUNT || (checkGridPos.y + j) < 0 || (checkGridPos.y + j) >= GRID_COUNT)
+            if ((checkGridPos.x + i) < 0  || (checkGridPos.y + j) < 0 )
                 continue;
             Tile tile = tiles[checkGridPos.x + i][checkGridPos.y + j];
+
             if (tile.type == Empty || tile.isHollowed)
             {
                 continue;
@@ -121,6 +123,16 @@ bool CheckCollision(void)
                 }
                 else
                 {
+                    // 判断碰撞方向
+                    // if(tile.grid.y > player.grid.y && tile.grid.x == player.grid.x )
+                    //     player.position.y = tile.position.y - GRID_SIZE / 2 - PLAYER_SIZE / 2;
+                    // else if(tile.grid.y == player.grid.y && tile.grid.x < player.grid.x)
+                    //     player.position.x = tile.position.x + GRID_SIZE / 2 + PLAYER_SIZE / 2;
+                    // else if(tile.grid.y == player.grid.y && tile.grid.x > player.grid.x)
+                    //     player.position.x = tile.position.x - GRID_SIZE / 2 - PLAYER_SIZE / 2;
+                    // else if(tile.grid.y < player.grid.y && tile.grid.x == player.grid.x)
+                    //     player.position.y = tile.position.y - GRID_SIZE / 2 - PLAYER_SIZE / 2;
+
                     // normal collision 
                     switch (player.gravityArea)
                     {
@@ -142,6 +154,9 @@ bool CheckCollision(void)
 
 void UpdatePlayer(Player *player, float delta)
 {
+    if(stamina == 0) gameState = Over;
+    if(rubyAmount == 0) gameState = Success;
+
     // // === Gravity Area ===
     CheckGravityArea();
 

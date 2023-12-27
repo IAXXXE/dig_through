@@ -35,6 +35,6 @@ const char *TileTypeToString(TileType type);
 
 Texture2D PathToTexture(char* path, int size);
 
-Texture2D GetTileTexture(TileType type,int style);
+Texture2D* GetTileTexture(TileType type,int style);
 
 #endif

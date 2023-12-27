@@ -6,7 +6,7 @@
 #define G 500
 #define PLAYER_JUMP_SPD 150.0f
 #define PLAYER_HOR_SPD 200.0f
-#define PLAYER_SIZE 24
+#define PLAYER_SIZE 16
 
 typedef enum PlayerAnim
 {
@@ -28,11 +28,15 @@ typedef struct Player
     bool canDig;
 } Player;
 
+extern GameState gameState;
 extern Player player;
 extern TextureLib textureLib;
-extern Tile tiles[GRID_COUNT][GRID_COUNT];
+extern Tile tiles[GRID_COUNT * 3][GRID_COUNT * 3];
 extern int stamina;
 extern int score;
+extern int rubyAmount;
+extern int gridCount;
+extern int level;
 
 void InitPlayer(void);
 void UpdatePlayer(Player *player, float delta);

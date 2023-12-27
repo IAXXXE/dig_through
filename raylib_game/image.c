@@ -1,5 +1,4 @@
-#include "image.h"
-#include <string.h>
+#include "include/image.h"
 
 void InitTexture(void)
 {
@@ -68,26 +67,26 @@ Texture2D PathToTexture(char *path, int size)
     return LoadTextureFromImage(image);
 }
 
-Texture2D GetTileTexture(TileType type, int idx)
+Texture2D* GetTileTexture(TileType type, int idx)
 {
     switch (type)
     {
     case Empty:
         break;
     case Ice:
-        return textureLib.ice.tile[idx];
+        return &textureLib.ice.tile[idx];
     case Grass:
-        return textureLib.grass.tile[idx];
+        return &textureLib.grass.tile[idx];
     case Clok:
-        return textureLib.clok.tile[idx];
+        return &textureLib.clok.tile[idx];
     case Stone:
-        return textureLib.stone.tile[idx];
+        return &textureLib.stone.tile[idx];
     case Sand:
-        return textureLib.sand.tile[idx];
+        return &textureLib.sand.tile[idx];
     case Igneous:
-        return textureLib.igneous.tile[idx];
+        return &textureLib.igneous.tile[idx];
     case Lava:
-        return textureLib.lava.tile[idx];
+        return &textureLib.lava.tile[idx];
     }
-    return textureLib.ice.tile[0];
+    return &textureLib.ice.tile[0];
 }

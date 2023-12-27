@@ -1,17 +1,18 @@
-#include "dig.h"
-#include "image.h"
-#include "player.h"
+#include "include/dig.h"
+#include "include/image.h"
+#include "include/player.h"
 #include <time.h>
 #include <stdlib.h>
 
 TextureLib textureLib = {0};
-Tile tiles[GRID_COUNT][GRID_COUNT] = {0};
-
+Tile tiles[GRID_COUNT*3][GRID_COUNT*3] = {0};
 
 Player player = {0};
-int stamina = 15;
+int stamina = 10;
 int score = 0;
 int rubyAmount = 0;
+int level = 1;
+int gridCount = 0 ;
 
 GameState gameState;
 Camera2D camera = {0};
@@ -25,10 +26,7 @@ void InitBlock(TileType type, Vector2 begin, Vector2 end)
         for(int y = begin.y ; y < end.y ; y++)
         {
             tiles[x][y].type = type;
-            tiles[x][y].grid = (GridPosition){x, y};
-            tiles[x][y].position = (Vector2){ x * GRID_SIZE, y * GRID_SIZE };
-
-            if( type != Lava && rand()%100 < 3)
+            if( type != Lava && rand()%100 < 5 && x != begin.x && y != begin.y && x != end.x - 1 && y != end.y - 1)
             {
                 tiles[x][y].hasRuby = true;
                 tiles[x][y].texture = GetTileTexture(type, 10);
@@ -51,17 +49,41 @@ void InitBlock(TileType type, Vector2 begin, Vector2 end)
     tiles[(int)end.x - 1][(int)end.y - 1].texture = GetTileTexture(type, 9);
 }
 
-void InitTile(void)
+void InitTile(int level)
 {
-    rubyAmount = 0;
-    int blockCount = GRID_COUNT / 3;
-    int rimCount = 2;    
+    // memset(tiles, 0, sizeof(tiles));
+    for(int x = 0; x<GRID_COUNT*3; x++)
+    {
+        for(int y = 0 ; y<GRID_COUNT *3 ; y++)
+        {
+            tiles[x][y].type = Empty;
+            tiles[x][y].isHollowed = false;
+            tiles[x][y].hasRuby = false; 
+        }
+    }
 
-    InitBlock(Ice,(Vector2){rimCount,rimCount},(Vector2){GRID_COUNT,blockCount});
+    rubyAmount = 0;
+    gridCount = GRID_COUNT/2 + GRID_COUNT/2 * (level%6);
+    int blockCount = gridCount / 3;
+    int rimCount = 0;    
+
+    InitBlock(Ice,(Vector2){rimCount,rimCount},(Vector2){gridCount,blockCount});
     InitBlock(Sand,(Vector2){rimCount,blockCount},(Vector2){blockCount,blockCount*2});
     InitBlock(Lava,(Vector2){blockCount,blockCount},(Vector2){blockCount*2,blockCount*2});
-    InitBlock(Igneous,(Vector2){blockCount*2,blockCount},(Vector2){GRID_COUNT,blockCount*2});
-    InitBlock(Grass,(Vector2){rimCount,blockCount*2},(Vector2){GRID_COUNT,GRID_COUNT});
+    InitBlock(Igneous,(Vector2){blockCount*2,blockCount},(Vector2){gridCount,blockCount*2});
+    InitBlock(Grass,(Vector2){rimCount,blockCount*2},(Vector2){gridCount,gridCount});
+}
+
+void InitTileMap(void)
+{
+    for(int x = 0; x<GRID_COUNT*3; x++)
+    {
+        for(int y = 0 ; y<GRID_COUNT *3 ; y++)
+        {
+            tiles[x][y].grid = (GridPosition){x, y};
+            tiles[x][y].position = (Vector2){ x * GRID_SIZE, y * GRID_SIZE };
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------
@@ -73,10 +95,10 @@ void UpdateCameraCenterSmoothFollow(Camera2D *camera, Player *player, EnvItem *e
 void UpdateCameraEvenOutOnLanding(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height);
 void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height);
 
-void InitGame(void)
+void InitGame(int level)
 { 
-    InitTile();
-    player.position = (Vector2){200, 0};
+    InitTile(level);
+    player.position = (Vector2){160, -80};
     player.speed = 0;
     player.canJump = false;
     player.texture = PathToTexture("image/hero/idle_01.png", PLAYER_SIZE);
@@ -94,8 +116,9 @@ int main(void)
     gameState = Start;
     InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
     InitTexture();
+    InitTileMap();
 
-    InitGame();
+    // InitGame();
 
     EnvItem envItems[] = {
         {{0, 0, 1000, 400}, 0, LIGHTGRAY},
@@ -132,11 +155,22 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())
     {
-        if(stamina == 0) gameState == Over;
+        ClearBackground(LIGHTGRAY);
 
         if(gameState == Start)
         {
+            level = 1;
+            BeginDrawing();
+                ClearBackground(LIGHTGRAY);
+                DrawText("DIG THROUGH ! ! !",GetScreenWidth()/2 - MeasureText("DIG THROUGH ! ! !", 80)/2, GetScreenHeight()/2 - 120, 80, BLUE);
+                DrawText("PRESS [ENTER] TO START GAME", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO START GAME", 30)/2, GetScreenHeight()/2 + 50, 30, BLUE);
+            EndDrawing();
 
+            if(IsKeyDown(KEY_ENTER))
+            {
+                InitGame(level);
+                gameState = Running;
+            }
         }
         else if (gameState == Running)
         {
@@ -168,15 +202,12 @@ int main(void)
 
             BeginMode2D(camera);
 
-                for (int i = 0; i < GRID_COUNT; i++)
+                for (int i = 0; i < gridCount; i++)
                 {
-                    for (int j = 0; j < GRID_COUNT; j++)
+                    for (int j = 0; j < gridCount; j++)
                     {
                         Tile tile = tiles[i][j];
-                        //if (tile.type != Empty)
-                        DrawTexture(tile.texture, tile.position.x - GRID_SIZE / 2, tile.position.y - GRID_SIZE / 2, WHITE);
-                        // else
-                        //     DrawRectangleRec(ToRectangle(tile.position, GRID_SIZE), LIGHTGRAY);
+                        DrawTexture(*tile.texture, tile.position.x - GRID_SIZE / 2, tile.position.y - GRID_SIZE / 2, WHITE);
 
                         //  === Debug Info === Draw Grid position
                         // char gridPosStr[1024];
@@ -185,7 +216,7 @@ int main(void)
                     }
                 }
 
-                // Draw Palyer
+                // === Draw Palyer ===
                 Vector2 drawPos = (Vector2){player.position.x - PLAYER_SIZE / 2, player.position.y - PLAYER_SIZE / 2};
                 switch (player.gravityArea)
                 {
@@ -212,7 +243,7 @@ int main(void)
 
             EndMode2D();
 
-            // Debug Info:
+            // Debug Info
             char positionStr[1024];
             sprintf(positionStr, "Player position : x = %f , y = %f", player.position.x, player.position.y);
             DrawText(positionStr, 20, 20, 20, BLUE);
@@ -220,7 +251,16 @@ int main(void)
             char gridPositionStr[1024];
             sprintf(gridPositionStr, "Player grid position : x = %d , y = %d", player.grid.x, player.grid.y);
             DrawText(gridPositionStr, 20, 40, 20, BLUE);
+            
+            char levelStr[1024];
+            sprintf(levelStr, "LEVEL : %d", level);
+            DrawText(levelStr, 20, 60, 20, BLUE);
 
+            char gridCountStr[1024];
+            sprintf(gridCountStr, "Grid Count : %d * %d", gridCount, gridCount);
+            DrawText(gridCountStr, 20, 80, 20, BLUE);
+
+            // Game Info
             char scoreStr[1024];
             sprintf(scoreStr, "Score : %d", score);
             DrawText(scoreStr, 575, 10, 30, GOLD);
@@ -229,19 +269,47 @@ int main(void)
             sprintf(staminaStr, "Stamina : %d", stamina);
             DrawText(staminaStr, 575, 50, 30, BLUE);
 
+            char rubyStr[1024];
+            sprintf(rubyStr, "Ruby    : %d", rubyAmount);
+            DrawText(rubyStr, 575, 90, 30, BLUE);
+
             EndDrawing();
             //----------------------------------------------------------------------------------
         }
-        else if(gameState = Over)
+        else if(gameState == Over)
         {
             BeginDrawing();
-                DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
-            EndDrawing();
-        }
+                ClearBackground(LIGHTGRAY);
+                DrawText("FAILED...",GetScreenWidth()/2 - MeasureText("FAILED...", 80)/2, GetScreenHeight()/2 - 120, 80, GRAY);
+                DrawText("PRESS [ENTER] TO START GAME", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO START GAME", 30)/2, GetScreenHeight()/2 + 50, 30, GRAY);
         
+            EndDrawing();
+
+            if(IsKeyDown(KEY_ENTER))
+            {
+                level = 1;
+                stamina = 10;
+                InitGame(level);
+                gameState = Running;
+            }
+        }
+        else if(gameState == Success)
+        {
+            BeginDrawing();
+                ClearBackground(LIGHTGRAY);
+                DrawText("Success ! ",GetScreenWidth()/2 - MeasureText("Success ! ", 80)/2, GetScreenHeight()/2 - 120, 80, GOLD);
+                DrawText("PRESS [ENTER] TO NEXT LEVEL", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO NEXT LEVEL", 30)/2, GetScreenHeight()/2 + 50, 30, GOLD);
+            EndDrawing();
+
+            if(IsKeyDown(KEY_ENTER))
+            {
+                level ++;
+                InitGame(level);
+                gameState = Running;
+            }
+        }
     }
 
-    UnloadGame();
     // De-Initialization
     //--------------------------------------------------------------------------------------
     CloseWindow(); // Close window and OpenGL context

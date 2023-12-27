@@ -1,17 +1,19 @@
 #ifndef DIG_H
 #define DIG_H
 #include <stdio.h>
+#include <string.h>
 #include "raylib.h"
 #include "raymath.h"
 
 #define GRID_SIZE 40
-#define GRID_COUNT 36
+#define GRID_COUNT 12
 
 typedef enum GameState
 {
     Start,
     Running,
     Over,
+    Success
 }GameState;
 
 typedef enum GravityArea
@@ -49,8 +51,8 @@ typedef struct GridPosition
 typedef struct Tile
 {
     Vector2 position;
-    Texture2D texture;
     GridPosition grid;
+    Texture2D* texture;
     TileType type;
     bool isHollowed;
     bool hasRuby;
